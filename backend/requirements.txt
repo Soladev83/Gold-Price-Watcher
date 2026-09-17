@@ -1,0 +1,30 @@
+# Web framework
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+
+# HTTP client (async scraping + Telegram)
+httpx==0.27.0
+
+# HTML parsing
+beautifulsoup4==4.12.3
+lxml==5.2.2
+
+# Database
+sqlalchemy==2.0.30
+# Uncomment for PostgreSQL / Supabase:
+# psycopg2-binary==2.9.9
+
+# Scheduler
+apscheduler==3.10.4
+
+# Data validation
+pydantic==2.7.4
+pydantic[email]==2.7.4
+
+# Auth — password hashing + JWT
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.9
+
+# Environment variables
+python-dotenv==1.0.1

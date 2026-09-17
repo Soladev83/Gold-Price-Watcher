@@ -1,0 +1,45 @@
+# ──────────────────────────────────────────────────────────────────────────
+# Keep-Alive Pinger
+#
+# Free-tier hosts (Render, Railway hobby plan) spin down after ~15 minutes
+# of inactivity. This workflow pings the /ping endpoint every 14 minutes
+# around the clock so the service never goes to sleep.
+#
+# Setup (one-time):
+#   1. Deploy your backend and note the public URL
+#      e.g. https://gold-price-watcher.onrender.com
+#   2. In your GitHub repo → Settings → Secrets and variables → Actions
+#   3. Add a secret named BACKEND_URL with that URL (no trailing slash)
+#   4. Push this file — the workflow activates automatically
+# ──────────────────────────────────────────────────────────────────────────
+
+name: Keep Alive — Ping Backend
+
+on:
+  schedule:
+    # Every 14 minutes, 24/7
+    # GitHub Actions cron uses UTC. Minimum interval is 5 minutes.
+    - cron: "*/14 * * * *"
+
+  # Allow manual trigger from the Actions tab for testing
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping /ping endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Ping backend keep-alive endpoint
+        run: |
+          echo "Pinging ${{ secrets.BACKEND_URL }}/ping ..."
+          RESPONSE=$(curl --silent --show-error --fail \
+            --max-time 30 \
+            --retry 3 \
+            --retry-delay 5 \
+            "${{ secrets.BACKEND_URL }}/ping")
+          echo "Response: $RESPONSE"
+
+      - name: Confirm service is alive
+        run: echo "Keep-alive ping completed at $(date -u)"
