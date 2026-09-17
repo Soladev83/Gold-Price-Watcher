@@ -2,10 +2,8 @@
 # Docs: https://render.com/docs/render-yaml-reference
 #
 # This file deploys:
-#   - backend  : Python FastAPI web service
-#   - frontend : React static site
-#
-# Place this file at the repo root and connect the repo in the Render dashboard.
+#   - backend  : Python FastAPI web service (Starter plan — $7/mo, always-on)
+#   - frontend : React static site (free)
 
 services:
   # ── Backend (FastAPI) ────────────────────────────────────────────────────
@@ -13,25 +11,22 @@ services:
     name: gold-price-watcher-api
     runtime: python
     region: oregon          # change to frankfurt / singapore if closer to Ethiopia
-    plan: free              # upgrade to starter ($7/mo) for always-on
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /ping
 
     envVars:
-      # Set these in the Render dashboard under Environment → Secret Files
-      # or add them as individual env vars. Never commit real values here.
       - key: DATABASE_URL
-        # For free tier use the Render-provided PostgreSQL URL (add a Postgres service below)
-        # or keep SQLite for a quick start (data resets on every deploy with SQLite).
-        value: sqlite:///./gold_watcher.db   # replace with Render Postgres URL in production
+        # Keep SQLite for a quick start (data resets on redeploy).
+        # For persistent storage, add a Postgres service and use its internal URL.
+        value: sqlite:///./gold_watcher.db
 
       - key: SECRET_KEY
-        generateValue: true   # Render auto-generates a secure random value
+        generateValue: true
 
       - key: TELEGRAM_BOT_TOKEN
-        sync: false           # fill in the Render dashboard — never committed
+        sync: false           # set this in the Render dashboard
 
       - key: TELEGRAM_BOT_USERNAME
         sync: false
@@ -43,14 +38,13 @@ services:
         value: "12"
 
       - key: CORS_ORIGINS
-        # Replace with your actual Render frontend URL after first deploy
+        # Update this to your actual frontend URL after first deploy
         value: https://gold-price-watcher.onrender.com,http://localhost:5173
 
   # ── Frontend (React / Vite static site) ─────────────────────────────────
   - type: web
     name: gold-price-watcher
     runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
@@ -62,13 +56,12 @@ services:
         destination: /index.html
 
     envVars:
-      # Vite needs the backend URL at build time for the API proxy
       - key: VITE_API_BASE_URL
         value: https://gold-price-watcher-api.onrender.com
 
   # ── PostgreSQL (optional — recommended for production) ───────────────────
-  # Uncomment this block to add a managed Postgres database.
-  # Then set DATABASE_URL on the backend service to the internal DB URL.
+  # Uncomment to add a managed Postgres database.
+  # Then update DATABASE_URL on the backend to use the internal DB URL.
   #
   # - type: pserv
   #   name: gold-price-watcher-db
