@@ -17,9 +17,9 @@ sqlalchemy==2.0.30
 # Scheduler
 apscheduler==3.10.4
 
-# Data validation
-pydantic==2.7.4
+# Data validation + email support
 pydantic[email]==2.7.4
+email-validator==2.1.1
 
 # Auth — password hashing + JWT
 passlib[bcrypt]==1.7.4

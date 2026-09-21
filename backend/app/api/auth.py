@@ -15,7 +15,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
@@ -36,6 +36,11 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
     full_name: Optional[str] = Field(default=None, max_length=200)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def lowercase_email(cls, v: str) -> str:
+        return v.strip().lower()
 
 
 class TokenResponse(BaseModel):
@@ -96,7 +101,7 @@ def login(
     db: Session = Depends(get_db),
 ):
     """Standard OAuth2 password flow. `username` field = email."""
-    user = db.query(User).filter(User.email == form.username).first()
+    user = db.query(User).filter(User.email == form.username.strip().lower()).first()
     if not user or not verify_password(form.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
